@@ -6,6 +6,7 @@ end
 
 if ARGV.length != 2 then
 	puts("usage: twos_compliment [a] [b]")
+	exit(1)
 end
 
 a = ARGV[0].to_i
