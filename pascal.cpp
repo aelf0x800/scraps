@@ -1,38 +1,77 @@
+/*
+ * pascal_multi.cpp - Asynchronous Pascal's triangle calculator
+ */
+
 #include <boost/multiprecision/cpp_int.hpp>
+#include <chrono>
 #include <cstdint>
 #include <fstream>
+#include <future>
 #include <iostream>
+#include <unordered_map>
 #include <vector>
-
-using boost::multiprecision::uint1024_t;
 
 using boost::multiprecision::number;
 using boost::multiprecision::cpp_int_backend;
 using boost::multiprecision::unsigned_magnitude;
 using boost::multiprecision::checked;
 
-typedef number<cpp_int_backend<8192, 8129, unsigned_magnitude, checked, void>> checked_uint8192_t;
+// Primitive integer types
+typedef int_least32_t I32;
+typedef uint_least64_t U64;
 
-checked_uint8192_t factorial(checked_uint8192_t n) { return n <= 1 ? 1 : n * factorial(n - 1); }
-checked_uint8192_t combination(checked_uint8192_t n, checked_uint8192_t r) { return factorial(n) / (factorial(r) * factorial(n - r)); } 
-checked_uint8192_t permutation(checked_uint8192_t n, checked_uint8192_t r) { return factorial(n) / factorial(n - r); }
+// A 16384-bit unsigned integer type
+typedef number<cpp_int_backend<16384, 16384, unsigned_magnitude, checked, void>> CU16384;
 
-int main()
+// Type for storing the triangle
+typedef std::vector<CU16384> Row;
+typedef std::vector<Row> Triangle;
+
+// Base functions used for the calculations
+CU16384 Factorial(CU16384 n) { return n <= 1 ? 1 : n * Factorial(n - 1); }
+CU16384 Combination(CU16384 n, CU16384 r) { return Factorial(n) / (Factorial(r) * Factorial(n - r)); } 
+
+// Function for calculating a row of Pascal's triangle
+Row CalculateRow(U64 n)
 {
-    std::ofstream output{ "output.txt" };
-    
-    // Pascal's triangle to 170 rows
-    for (checked_uint8192_t i{}; i <= 1000; i++)
-    {
-	std::vector<checked_uint8192_t> row{};
-	for (checked_uint8192_t j{}; j <= i; j++)
-	    row.push_back(combination(i, j));
+    Row row{};
+    for (U64 i{}; i <= n; i++)
+	row.push_back(Combination(n, i));
+    std::cout << "Calculated row " << n << std::endl;
+    return row;
+}
 
-	std::string rowString{};
-	for (const checked_uint8192_t n : row)
-	    output << n <<  " ";
-	output << '\n';
+// Get current time in milliseconds
+U64 GetTimeMs()
+{
+    using std::chrono::milliseconds;
+    using std::chrono::duration_cast;
+    using std::chrono::system_clock;
+
+    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+ 
+I32 main()
+{
+    // Start the "stopwatch"
+    U64 stopwatchStart{ GetTimeMs() };
+    
+    // Generate the Pascal's triangle
+    Triangle triangle{}; 
+    for (U64 i{}; i <= 1000; i++)
+	triangle.push_back(CalculateRow(i));
+
+    // Stop the "stopwatch"
+    U64 stopwatchStop{ GetTimeMs() };
+			  
+    // Print the results
+    for (const Row& row : triangle)
+    {
+	for (const CU16384& value : row)
+	    std::cout << value << " ";
+	std::cout << std::endl;
     }
 
-    output.close();
+    // Print the time taken to calculate
+    std::cout << "Took " << (stopwatchStop - stopwatchStart) << " ms" << std::endl;
 }

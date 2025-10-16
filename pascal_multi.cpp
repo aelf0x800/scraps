@@ -60,10 +60,10 @@ I32 main()
     Triangle triangle{}; 
     for (U64 i{}; i <= 1000; i += 2)
     {
-	Row r1 = std::async(std::launch::async, CalculateRow, i).get();
-	Row r2 = std::async(std::launch::async, CalculateRow, i + 1).get();
-	triangle.push_back(r1);
-	triangle.push_back(r2);
+	std::future<Row> r1 = std::async(std::launch::async, CalculateRow, i);
+	std::future<Row> r2 = std::async(std::launch::async, CalculateRow, i + 1);
+	triangle.push_back(r1.get());
+	triangle.push_back(r2.get());
     }
 
     // Stop the "stopwatch"
