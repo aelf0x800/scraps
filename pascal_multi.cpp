@@ -4,6 +4,7 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <future>
@@ -28,8 +29,8 @@ typedef std::vector<CU16384> Row;
 typedef std::vector<Row> Triangle;
 
 // Base functions used for the calculations
-CU16384 Factorial(CU16384 n) { return n <= 1 ? 1 : n * Factorial(n - 1); }
-CU16384 Combination(CU16384 n, CU16384 r) { return Factorial(n) / (Factorial(r) * Factorial(n - r)); } 
+CU16384 FactorialBP(CU16384 n) { if (n <= 1) [[unlikely]] return 1; else [[likely]] return n * FactorialBP(n - 1); }
+CU16384 Combination(CU16384 n, CU16384 r) { return FactorialBP(n) / (FactorialBP(r) * FactorialBP(n - r)); } 
 
 // Function for calculating a row of Pascal's triangle
 Row CalculateRow(U64 n)
@@ -58,7 +59,7 @@ I32 main()
     
     // Generate the Pascal's triangle
     Triangle triangle{}; 
-    for (U64 i{}; i <= 1000; i += 2)
+    for (U64 i{}; i <= 500; i += 2)
     {
 	std::future<Row> r1 = std::async(std::launch::async, CalculateRow, i);
 	std::future<Row> r2 = std::async(std::launch::async, CalculateRow, i + 1);
@@ -79,4 +80,4 @@ I32 main()
 
     // Print the time taken to calculate
     std::cout << "Took " << (stopwatchStop - stopwatchStart) << " ms" << std::endl;
-}
+ }
