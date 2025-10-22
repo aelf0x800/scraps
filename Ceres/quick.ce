@@ -1,0 +1,29 @@
+con STDOUT 1
+con STDIN 2
+con STDERR 3
+
+var x
+var y
+var z
+
+def Exit
+    0 60 sys
+    ret
+
+def Checker
+    dup 2 % 0 = then IsNotPrime
+    dup 5 % 0 = then IsDivisableBy5
+    IsPrime
+    ret
+
+    def IsPrime
+        "Prime" Print ret
+    def IsDivisableBy5
+        "Divisable by 5" Print ret
+    def IsNotPrime
+        "Not prime" Print ret 
+
+
+5 Checker
+2 Checker
+9 Checker
